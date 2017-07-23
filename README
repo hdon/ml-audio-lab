@@ -1,0 +1,1 @@
+gst-launch-1.0 filesrc location=~/Documents/Vox/olivertwist6_39_dickens_64kb.mp3 ! mad ! audioconvert ! wavenc ! filesink location=file.wav
