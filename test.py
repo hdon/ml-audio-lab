@@ -1,10 +1,14 @@
 import numpy as np
 import scipy.signal
 import scipy.io.wavfile
-import code
+import code, sys, os
 
-print 'reading'
-sample_rate, input_samples = scipy.io.wavfile.read('file.wav', mmap=True)
+input_filename = sys.argv[1]
+base_filename, filename_ext = os.path.splitext(input_filename)
+output_filename = base_filename + '.stft2istft' + filename_ext
+
+print 'reading', input_filename
+sample_rate, input_samples = scipy.io.wavfile.read(input_filename, mmap=True)
 # collect some diagnostic info about samples
 print 'input samples mean:', np.mean(input_samples)
 print 'input samples std:', np.std(input_samples)
@@ -27,6 +31,7 @@ output_samples = (output_samples - m) / d
 print 'output samples mean:', np.mean(output_samples)
 print 'output samples std:', np.std(output_samples)
 print 'writing'
-output_samples.tofile('foo.pcm')
+scipy.io.wavfile.write(output_filename, sample_rate, output_samples)
+#output_samples.tofile('foo.pcm')
 
 print 'bye'
