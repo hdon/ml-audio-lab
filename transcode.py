@@ -7,54 +7,55 @@ import code, sys, os
 INFINITY = float('inf')
 
 input_filename = sys.argv[1]
-load_checkpoint_filename = sys.argv[2] if len(sys.argv) > 2 else None
+load_checkpoint_filename = sys.argv[2]
+max_samples = int(sys.argv[3])
 
-print 'reading', input_filename
+print('reading', input_filename)
 
 def process_input(input_filename, max_samples = INFINITY):
   sample_rate, input_samples = scipy.io.wavfile.read(input_filename, mmap=True)
   if len(input_samples) > max_samples:
     input_samples = input_samples[0:max_samples]
-  print input_samples.shape
+  print(input_samples.shape)
   # collect some diagnostic info about samples
-  print 'input samples mean:', np.mean(input_samples)
-  print 'input samples std:', np.std(input_samples)
+  print('input samples mean:', np.mean(input_samples))
+  print('input samples std:', np.std(input_samples))
   # for our purposes we can ignore dft_freqs and dft_times
-  print 'stft'
+  print('stft')
   stft_freqs, stft_times, stft = scipy.signal.stft(input_samples)
   return sample_rate, stft_freqs, stft_times, stft
 
 def foo(stft, output_filename):
   'inverse an stft and write to wav file'
   # we can ignore istft_times
-  print 'istft'
+  print('istft')
   istft_times, output_samples = scipy.signal.istft(stft)
-  #print 'converting to int'
+  #print('converting to int')
   #output_samples = output_samples.astype(int)
   # collect some diagnostic info about samples
-  print 'output samples mean:', np.mean(output_samples)
-  print 'output samples std:', np.std(output_samples)
+  print('output samples mean:', np.mean(output_samples))
+  print('output samples std:', np.std(output_samples))
   #scipy.io.wavfile.write('foo.wav', 8000, output_samples)
-  print 'quieting'
+  print('quieting')
   d = np.max(output_samples) - np.min(output_samples)
   m = np.max(output_samples) - d/2
   output_samples = (output_samples - m) / d
-  print 'output samples mean:', np.mean(output_samples)
-  print 'output samples std:', np.std(output_samples)
-  print 'writing'
+  print('output samples mean:', np.mean(output_samples))
+  print('output samples std:', np.std(output_samples))
+  print('writing')
   scipy.io.wavfile.write(output_filename, 8000, output_samples)
   #output_samples.tofile('foo.pcm')
 
 input_tracks = []
-sample_rate, stft_freqs, stft_times, stft = process_input(input_filename)
-print stft_freqs.shape
-print stft_times.shape
-print 'stft.shape=', stft.shape
+sample_rate, stft_freqs, stft_times, stft = process_input(input_filename, max_samples)
+print(stft_freqs.shape)
+print(stft_times.shape)
+print('stft.shape=', stft.shape)
 
 # Hyperparameters
 learning_rate = 0.1
 training_epochs = 200000
-target_cost = 0.01
+target_cost = 0.000001
 num_hidden = 64
 # training state
 display_step = 10
@@ -93,26 +94,26 @@ with tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=1)) as sess:
   if load_checkpoint_filename:
     saver = tf.train.Saver()
     saver.restore(sess, load_checkpoint_filename)
-    print 'model restored'
+    print('model restored')
   else:
-    print 'need model'
+    print('need model')
     raise SystemExit(1)
   transcoded = sess.run(y, feed_dict={X: stft_prepared })
 
-print 'istft'
-istft_times, output_samples = scipy.signal.istft(transcoded)
-#print 'converting to int'
+print('istft')
+istft_times, output_samples = scipy.signal.istft(np.transpose(transcoded))
+#print('converting to int')
 #output_samples = output_samples.astype(int)
 # collect some diagnostic info about samples
-print 'output samples mean:', np.mean(output_samples)
-print 'output samples std:', np.std(output_samples)
+print('output samples mean:', np.mean(output_samples))
+print('output samples std:', np.std(output_samples))
 #scipy.io.wavfile.write('foo.wav', 8000, output_samples)
-print 'quieting'
+print('quieting')
 d = np.max(output_samples) - np.min(output_samples)
 m = np.max(output_samples) - d/2
 output_samples = (output_samples - m) / d
-print 'output samples mean:', np.mean(output_samples)
-print 'output samples std:', np.std(output_samples)
+print('output samples mean:', np.mean(output_samples))
+print('output samples std:', np.std(output_samples))
 output_filename = 'transcoded.wav'
-print 'writing', output_filename
+print('writing', output_filename)
 scipy.io.wavfile.write(output_filename, sample_rate, output_samples)
