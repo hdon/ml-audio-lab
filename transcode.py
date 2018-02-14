@@ -8,7 +8,7 @@ INFINITY = float('inf')
 
 input_filename = sys.argv[1]
 load_checkpoint_filename = sys.argv[2]
-max_samples = int(sys.argv[3])
+max_samples = int(sys.argv[3]) if len(sys.argv) > 3 else INFINITY
 
 print('reading', input_filename)
 

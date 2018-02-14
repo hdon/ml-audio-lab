@@ -62,7 +62,7 @@ try:
   # Hyperparameters
   learning_rate = 0.0001
   training_epochs = 200000
-  target_cost = 0.00001
+  target_cost = 0.000001
   num_hidden = 64
   # training state
   display_step = 10
@@ -82,7 +82,9 @@ try:
 
   y = layer_2
   y_ = X # autoencoder just fits output to input
-  cost = tf.reduce_mean(tf.pow(y_ - y, 2))
+  code.interact(local=locals())
+  #cost_per = tf.reduce_mean(tf.pow(y_ - y, 2), 
+  #cost = tf.reduce_mean(cost_per)
   #optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
   optimizer = tf.train.AdamOptimizer(learning_rate).minimize(cost)
 
@@ -95,8 +97,8 @@ try:
   X_image = tf.reshape(X, [1, stft.shape[1], stft.shape[0], 1], 'X_image')
   e_image = tf.reshape(y-X, [1, stft.shape[1], stft.shape[0], 1], 'e_image')
   layer1_image = tf.reshape(tf.transpose(layer_1), [1, num_hidden, stft.shape[1], 1], 'layer1_image')
-  tf.summary.image('y', y_image)
-  tf.summary.image('X', X_image)
+  #tf.summary.image('y', y_image)
+  #tf.summary.image('X', X_image)
   tf.summary.image('e', e_image)
   tf.summary.image('layer_1', layer1_image)
   # Summary images of weights and biases
@@ -108,6 +110,7 @@ try:
   tf.summary.image('w2', w2_image)
   tf.summary.image('b1', b1_image)
   tf.summary.image('b2', b2_image)
+  tf.summary.histogram('cost_per', cost_per)
 
   #tf.summary.tensor_summary('X', X)
   #tf.summary.tensor_summary('y', y)
