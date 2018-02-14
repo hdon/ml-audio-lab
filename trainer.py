@@ -18,17 +18,22 @@ class Trainer:
     self.model = model
     self.x = x
     self.y = y # TODO feed this in too if (x is not y)
+
+    self.cost_per = tf.pow(model.y - model.estimated_y, 2)
+    self.cost = tf.reduce_mean(self.cost_per)
+
     self.load_checkpoint_filename = load_checkpoint_filename
     self.target_steps = target_steps
     self.target_cost = target_cost
     self.steps_per_summary = steps_per_summary
     self.learning_rate = model.lr
     self.optimizer = tf.train.AdamOptimizer(self.learning_rate) \
-      .minimize(model.cost, global_step=model.global_step)
-    tf.summary.scalar('cost', model.cost)
+      .minimize(self.cost, global_step=model.global_step)
+    tf.summary.scalar('cost', self.cost)
     self.summary_op = tf.summary.merge_all()
     self.log_dir_name = None
     self.writer = tf.summary.FileWriter(self.getLogDirName(), graph=tf.get_default_graph())
+
 
   def getCheckpointFilename(self):
     return '%(model)s-t-%(step)s' % {
@@ -78,7 +83,7 @@ class Trainer:
           sess.run(self.optimizer, feed_dict=feed_dict)
           if self.steps_trained % self.steps_per_summary == 0:
             training_cost, summary = sess.run(
-              [self.model.cost, self.summary_op]
+              [self.cost, self.summary_op]
             , feed_dict=feed_dict
             )
             print('% 7d/% 7d cost=%.9f' % (

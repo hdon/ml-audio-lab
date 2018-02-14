@@ -54,8 +54,6 @@ class Model:
       ))
 
     estimated_y = a[-1]
-    cost_per = tf.pow(y - estimated_y, 2)
-    cost = tf.reduce_mean(cost_per)
 
     self.x = x
     self.y = y
@@ -63,8 +61,6 @@ class Model:
     self.b = b
     self.a = a
     self.estimated_y = estimated_y
-    self.cost_per = cost_per
-    self.cost = cost
     self.global_step = global_step
 
     self.num_features = num_features
@@ -87,20 +83,3 @@ class Model:
     , 'lr_end': self.lr_end
     , 'lr_decay_steps': self.lr_decay_steps
     }
-
-    #for n in num_hidden:
-    #w1 = tf.Variable(tf.truncated_normal([num_features, num_hidden], stddev=0.1))
-    #w2 = tf.Variable(tf.truncated_normal([num_hidden, num_hidden], stddev=0.1))
-    #w3 = tf.Variable(tf.truncated_normal([num_hidden, num_features], stddev=0.1))
-    #b1 = tf.Variable(tf.truncated_normal([num_hidden], stddev=0.1))
-    #b2 = tf.Variable(tf.truncated_normal([num_hidden], stddev=0.1))
-    #b3 = tf.Variable(tf.truncated_normal([num_labels], stddev=0.1))
-#
-    #layer_1 = tf.nn.relu(tf.add(tf.matmul(x, w1), b1))
-    #layer_2 = tf.nn.relu(tf.add(tf.matmul(layer_1, w2), b2))
-    #layer_3 = tf.nn.relu(tf.add(tf.matmul(layer_2, w3), b3))
-#
-    #self.estimated_y = layer_3
-    #self.y = x # autoencoder just fits output to input
-    #self.cost_per = tf.pow(y - estimated_y, 2)
-    #self.cost = tf.reduce_mean(cost_per)
