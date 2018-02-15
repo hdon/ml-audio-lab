@@ -29,7 +29,7 @@ def wavToStft(input_filename, max_samples = inf):
   return sample_rate, stft_prepared
 
 def stftToWav(stft, sample_rate, output_filename):
-  'inverse an stft and write to wav file'
+  stft = np.transpose(stft)
   # we can ignore istft_times
   print('istft')
   istft_times, output_samples = scipy.signal.istft(stft)
