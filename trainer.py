@@ -1,6 +1,10 @@
 import tensorflow as tf
 import os, code
 
+optimizers_by_name = {
+  'adam': tf.train.AdamOptimizer
+}
+
 # TODO summaries with same parameters are getting grouped together in
 # tensorboard -- probably need to disambiguate them further. probably
 # should check the disk for what files already exist and then bump a
@@ -15,6 +19,7 @@ class Trainer:
   , target_cost = 0.000001
   , steps_per_summary = 10
   , y_morpher = None
+  , optimizer='adam'
   ):
     self.model = model
     self.x = x
@@ -33,7 +38,14 @@ class Trainer:
     self.target_cost = target_cost
     self.steps_per_summary = steps_per_summary
     self.learning_rate = model.lr
-    self.optimizer = tf.train.AdamOptimizer(self.learning_rate) \
+    if not callable(optimizer):
+      if type(optimizer) is not str:
+        raise ValueError('invalid optimizer')
+      self.optimizer_name = optimizer
+      optimizer = optimizers_by_name[optimizer]
+    else:
+      self.optimizer_name = optimizer.__name__
+    self.optimizer = optimizer(self.learning_rate) \
       .minimize(self.cost, global_step=model.global_step)
     tf.summary.scalar('cost', self.cost)
     self.summary_op = tf.summary.merge_all()
@@ -57,6 +69,11 @@ class Trainer:
       while 1:
         log_dir_name = log_dir_name_part % n
         if not os.path.exists(log_dir_name):
+          # use previous log file if we were asked to load a previously
+          # saved checkpoint; TODO more robust system for continuing
+          # training
+          if self.load_checkpoint_filename is not None and n > 0:
+            n -= 1
           self.log_dir_name = log_dir_name
           break
         n += 1
@@ -76,6 +93,7 @@ class Trainer:
       if self.load_checkpoint_filename:
         saver.restore(sess, self.load_checkpoint_filename)
         print('model restored')
+        self.steps_trained = sess.run(self.model.global_step)
         # TODO restore epochs counter!
 
       while self.keep_training:
