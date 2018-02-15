@@ -82,3 +82,9 @@ class Model:
     , 'stddev': self.stddev
     , 'lr': lr
     }
+
+  def run(self, checkpoint_filename, x):
+    with tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=1)) as sess:
+      saver = tf.train.Saver()
+      saver.restore(sess, checkpoint_filename)
+      return sess.run(self.estimated_y, feed_dict={self.x: x})
