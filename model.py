@@ -75,11 +75,10 @@ class Model:
     self.auto_encoder = auto_encoder
 
   def getModelFilename(self):
-    return '%(num_hidden)s-%(stddev)s-%(activation)s-lr-%(lr_start)s-%(lr_end)s-%(lr_decay_steps)s' % {
+    lr = self.lr if self.lr is not None else '%s-%s-%s' % (lr_start, lr_end, lr_decay_steps)
+    return '%(num_hidden)s-%(stddev)s-%(activation)s-lr-%(lr)s' % {
       'num_hidden': ','.join(map(str, self.num_hidden))
     , 'activation': ','.join(map(lambda f:f.__name__, self.activation))
     , 'stddev': self.stddev
-    , 'lr_start': self.lr_start
-    , 'lr_end': self.lr_end
-    , 'lr_decay_steps': self.lr_decay_steps
+    , 'lr': lr
     }

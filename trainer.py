@@ -14,12 +14,18 @@ class Trainer:
   , target_steps = 1600
   , target_cost = 0.000001
   , steps_per_summary = 10
+  , y_morpher = None
   ):
     self.model = model
     self.x = x
     self.y = y # TODO feed this in too if (x is not y)
 
-    self.cost_per = tf.pow(model.y - model.estimated_y, 2)
+    self.y_morpher = y_morpher
+    if y_morpher is None:
+      self.cost_per = tf.pow(model.y - model.estimated_y, 2)
+    else:
+      self.morphed_y = y_morpher(y)
+      self.cost_per = tf.pow(self.morphed_y - model.estimated_y, 2)
     self.cost = tf.reduce_mean(self.cost_per)
 
     self.load_checkpoint_filename = load_checkpoint_filename
@@ -57,7 +63,7 @@ class Trainer:
     return self.log_dir_name
 
   def train(self):
-    keep_training = True
+    self.keep_training = True
     x = self.x
 
     # How many steps trained so far?
@@ -72,7 +78,7 @@ class Trainer:
         print('model restored')
         # TODO restore epochs counter!
 
-      while keep_training:
+      while self.keep_training:
         try:
           # 
           feed_dict = {
@@ -98,13 +104,13 @@ class Trainer:
               break
           self.steps_trained += 1
           if self.steps_trained > self.target_steps:
-            keep_training = False
+            self.keep_training = False
         except KeyboardInterrupt as e:
           print()
           print()
           print('entering interactive shell')
           print('REMEMBER not to raise SYSTEMEXIT if you want your model saved!!!')
-          print('to save and quit, assign keep_training=False')
+          print('to save and quit, assign self.keep_training=False')
           print()
           print()
           code.interact(local=locals())
