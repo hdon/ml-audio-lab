@@ -3,6 +3,7 @@ import os, code
 
 optimizers_by_name = {
   'adam': tf.train.AdamOptimizer
+, 'gd': tf.train.GradientDescentOptimizer
 }
 
 # TODO summaries with same parameters are getting grouped together in
@@ -20,18 +21,26 @@ class Trainer:
   , steps_per_summary = 10
   , y_morpher = None
   , optimizer='adam'
+  , cost = 'mse'
   ):
     self.model = model
     self.x = x
     self.y = y # TODO feed this in too if (x is not y)
 
     self.y_morpher = y_morpher
-    if y_morpher is None:
-      self.cost_per = tf.pow(model.y - model.estimated_y, 2)
+    estimated_y = model.estimated_y
+    if y_morpher is not None:
+      self.morphed_y = y_morpher(model.estimated_y)
+      estimated_y = self.morphed_y
+
+    if cost == 'mse':
+      self.cost_per = tf.pow(model.y - estimated_y, 2)
+      self.cost = tf.reduce_mean(self.cost_per)
+    elif cost == 'ces':
+      self.cost_per = - model.y * tf.log(model.estimated_y + 1.0001)
+      self.cost = tf.reduce_sum(self.cost_per)
     else:
-      self.morphed_y = y_morpher(y)
-      self.cost_per = tf.pow(self.morphed_y - model.estimated_y, 2)
-    self.cost = tf.reduce_mean(self.cost_per)
+      raise ValueError('unknown cost function')
 
     self.load_checkpoint_filename = load_checkpoint_filename
     self.target_steps = target_steps

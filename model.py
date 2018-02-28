@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 from util import iterWindow
 
@@ -11,7 +12,7 @@ class Model:
   , lr = None
   , num_hidden = [32]
   , activation = [tf.tanh, tf.tanh]
-  , stddev = 0.1
+  , stddev = 0.01
   , auto_encoder = True
   ):
     # Validate arguments
@@ -46,7 +47,7 @@ class Model:
       w.append(tf.Variable(tf.truncated_normal(dims, stddev=stddev)))
     # build biases
     for dims in num_hidden + [num_labels]:
-      b.append(tf.Variable(tf.truncated_normal([dims], stddev=stddev)))
+      b.append(tf.Variable(tf.zeros([dims], dtype=tf.float32)))
     # build network layers
     for iLayer, (dims, activate) in enumerate(zip(num_hidden + [num_labels], activation)):
       a.append(activate(

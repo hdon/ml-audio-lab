@@ -7,7 +7,7 @@ import numpy as np
 # we are using min/max to normalize our audio data, but we should probably
 # be using mean + stddev. so far this is working out just fine, so, whatev
 
-def wavToStft(input_filename, max_samples = inf):
+def wavToStft(input_filename, max_samples = inf, return_imag = False):
   sample_rate, input_samples = scipy.io.wavfile.read(input_filename, mmap=True)
   #print('number of input samples:', len(input_samples))
   if len(input_samples) > max_samples:
@@ -22,13 +22,25 @@ def wavToStft(input_filename, max_samples = inf):
   stft_freqs, stft_times, stft = scipy.signal.stft(input_samples)
   #print('stft shape:', stft.shape)
   #return sample_rate, stft_freqs, stft_times, stft
-  stft_prepared = np.transpose(np.real(stft))
-  low = np.min(stft_prepared)
-  high = np.max(stft_prepared)
-  stft_prepared = (stft_prepared - (low+high)/2.0) / ((high-low)/2.0)
-  return sample_rate, stft_prepared
+  # prepare real component of stft
+  stft_prepared_real = np.transpose(np.real(stft))
+  low = np.min(stft_prepared_real)
+  high = np.max(stft_prepared_real)
+  stft_prepared_real = (stft_prepared_real - (low+high)/2.0) / ((high-low)/2.0)
+  # prepare imaginary component of stft
+  stft_prepared_imag = np.transpose(np.imag(stft))
+  low = np.min(stft_prepared_imag)
+  high = np.max(stft_prepared_imag)
+  stft_prepared_imag = (stft_prepared_imag - (low+high)/2.0) / ((high-low)/2.0)
+  # return with real or with both components
+  if return_imag:
+    return sample_rate, stft_prepared_real, stft_prepared_imag
+  else:
+    return sample_rate, stft_prepared_real
 
 def stftToWav(stft, sample_rate, output_filename):
+  '''first arg can either be the real component of an stft or it can be the
+  complex stft'''
   stft = np.transpose(stft)
   # we can ignore istft_times
   print('istft')
